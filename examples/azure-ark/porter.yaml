@@ -25,17 +25,17 @@ credentials:
 parameters:
 - name: storage_account_name
   type: string
-  default: porterazurearkdemo
+  default: porterdemoaccount
 
 - name: storage_container_name
   type: string
-  default: porterazurearkdemo
+  default: porterdemocontainer
 
 install:
   - description: "Create Azure Storage Account and Container"
     azure:
       type: storage
-      name: porter-azure-ark-demo
+      name: porter-azure-ark
       resourceGroup:
         source: bundle.credentials.RESOURCE_GROUP
       parameters:
