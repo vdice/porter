@@ -98,13 +98,16 @@ define helm_init
   helm init --service-account=tiller-deploy
 endef
 
+# TODO: use random/unique kind cluster name
+# e.g., KIND_NAME=$(random/unique name) kind create cluster --name $KIND_NAME
 HAS_KIND := $(shell command -v kind)
 kind:
 ifndef HAS_KIND
 	go get -u sigs.k8s.io/kind
 endif
+	-kind delete cluster
 	kind create cluster
-	$(call helm_init)
+	helm init
 	-docker network create kind-network
 	-docker network connect kind-network kind-control-plane
 	sed -i -E "s/localhost:[0-9]+/kind-control-plane:6443/" $(KUBECONFIG)
@@ -176,5 +179,4 @@ clean-test-cli: clean
 	-duffle uninstall PORTER-WORDPRESS --credentials ci
 	-helm delete --purge porter-ci-mysql
 	-helm delete --purge porter-ci-wordpress
-	-kind delete cluster
 

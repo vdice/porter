@@ -17,12 +17,7 @@ events.on("check_suite:rerequested", runSuite);
 events.on("check_run:rerequested", runSuite);
 
 events.on("exec", (e, p) => {
-  Group.runAll([
-    build(e, p),
-    xbuild(e, p),
-    test(e, p),
-    testIntegration(e, p)
-  ]);
+  kind(e, p).run();
 });
 
 // Although a GH App will trigger 'check_suite:requested' on a push to master event,
@@ -40,6 +35,17 @@ events.on("publish", (e, p) => {
 // **********************************************
 // Actions
 // **********************************************
+
+function kind(e, p) {
+  var goKind = new GoJob(`${projectName}-kind`);
+  goKind.docker.enabled = true;
+
+  goKind.tasks.push(
+    "make kind"
+  );
+
+  return goKind;
+}
 
 function build(e, p) {
   var goBuild = new GoJob(`${projectName}-build`);
