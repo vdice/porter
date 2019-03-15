@@ -4,7 +4,7 @@ REGISTRY ?= $(USER)
 VERSION ?= $(shell git describe --tags 2> /dev/null || echo v0)
 PERMALINK ?= $(shell git name-rev --name-only --tags --no-undefined HEAD &> /dev/null && echo latest || echo canary)
 
-KUBECONFIG ?= $(HOME)/.kube/config
+KUBECONFIG ?= $(HOME)/.kube/kind-config-kind
 DUFFLE_HOME ?= bin/.duffle
 PORTER_HOME ?= bin
 
@@ -88,7 +88,27 @@ test: clean test-unit test-cli
 test-unit: build
 	go test ./...
 
-test-cli: clean build init-duffle-home-for-ci init-porter-home-for-ci
+define helm_init
+	# setup RBAC for tiller
+  kubectl create sa -n kube-system tiller-deploy
+  kubectl create clusterrolebinding tiller-deploy --clusterrole=cluster-admin --serviceaccount=kube-system:tiller-deploy
+  helm init --service-account=tiller-deploy
+endef
+
+HAS_KIND := $(shell command -v kind)
+kind:
+ifndef HAS_KIND
+	go get -u sigs.k8s.io/kind
+endif
+	kind create cluster
+	$(call helm_init)
+	-docker network create kind-network
+	-docker network connect kind-network kind-control-plane
+	sed -i -E "s/localhost:[0-9]+/kind-control-plane:6443/" $(KUBECONFIG)
+	# TOREMOVE: testing of kind in dind scenario (brigade job)
+	docker run -v $(KUBECONFIG):/root/.kube/config alpine/helm version
+
+test-cli: kind clean-test-cli build init-duffle-home-for-ci init-porter-home-for-ci
 	export KUBECONFIG
 	export PORTER_HOME
 	export DUFFLE_HOME
@@ -147,7 +167,11 @@ clean:
 	-rm -fr bin/
 	-rm -fr cnab/
 	-rm Dockerfile porter.yaml
+
+clean-test-cli: clean
 	-duffle uninstall PORTER-HELLO
 	-duffle uninstall PORTER-WORDPRESS --credentials ci
 	-helm delete --purge porter-ci-mysql
 	-helm delete --purge porter-ci-wordpress
+	-kind delete cluster
+
