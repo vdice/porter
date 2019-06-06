@@ -100,12 +100,12 @@ func (p *Porter) ListCredentials(opts printer.PrintOptions) error {
 		}
 
 		printCredRow :=
-			func(v interface{}) []interface{} {
+			func(v interface{}) []string {
 				cr, ok := v.(CredentialsFile)
 				if !ok {
 					return nil
 				}
-				return []interface{}{cr.Name, tp.Format(cr.Modified)}
+				return []string{cr.Name, tp.Format(cr.Modified)}
 			}
 		return printer.PrintTable(p.Out, *credentialsFiles, printCredRow,
 			"NAME", "MODIFIED")
@@ -250,7 +250,7 @@ func (p *Porter) ShowCredential(opts CredentialShowOptions) error {
 		return printer.PrintYaml(p.Out, credSet)
 	case printer.FormatTable:
 		printCredentialRow :=
-			func(v interface{}) []interface{} {
+			func(v interface{}) []string {
 				cs, ok := v.(credentials.CredentialStrategy)
 				if !ok {
 					return nil
@@ -278,7 +278,7 @@ func (p *Porter) ShowCredential(opts CredentialShowOptions) error {
 						sourceType = fieldName
 					}
 				}
-				return []interface{}{cs.Name, source, sourceType}
+				return []string{cs.Name, source, sourceType}
 			}
 		return printer.PrintTable(p.Out, credSet.Credentials, printCredentialRow,
 			"Name", "Local Source", "Source Type")

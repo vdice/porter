@@ -20,10 +20,10 @@ func TestPrintTable(t *testing.T) {
 
 	b := &bytes.Buffer{}
 
-	err := PrintTable(b, v, func(r interface{}) []interface{} {
+	err := PrintTable(b, v, func(r interface{}) []string {
 		row, ok := r.(testType)
 		require.True(t, ok)
-		return []interface{}{row.A, row.B}
+		return []string{row.A.(string), row.B.(string)}
 	},
 		"A", "B")
 
@@ -38,10 +38,10 @@ func TestPrintTable_WithoutHeaders(t *testing.T) {
 
 	b := &bytes.Buffer{}
 
-	err := PrintTable(b, v, func(r interface{}) []interface{} {
+	err := PrintTable(b, v, func(r interface{}) []string {
 		row, ok := r.(testType)
 		require.True(t, ok)
-		return []interface{}{row.A, row.B}
+		return []string{row.A.(string), row.B.(string)}
 	})
 
 	require.Nil(t, err)

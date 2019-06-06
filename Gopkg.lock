@@ -705,6 +705,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:06c1db5d5012c2671348612bb706ec332a9f69bf2e337b6c974c59710bb0b138"
+  name = "github.com/kataras/tablewriter"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "e063d29b7c2363c8e21a25fdb4109f03beb50230"
+
+[[projects]]
+  branch = "master"
   digest = "1:cf68a79fd02ab0f6942b9567d03d054b6568212fcc22de2a4afdefd096923749"
   name = "github.com/kballard/go-shellquote"
   packages = ["."]
@@ -718,6 +726,14 @@
   pruneopts = "NUT"
   revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
   version = "v1.0.1"
+
+[[projects]]
+  digest = "1:c5e669cdb176e5359ac3ea9cd9378c0cd13a86b4765bce9ad77f5b7ee04eec7a"
+  name = "github.com/landoop/tableprinter"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "8bd8c2576d278c0352b9cecd384e609b51943f28"
+  version = "0.0.3"
 
 [[projects]]
   branch = "master"
@@ -758,6 +774,14 @@
   pruneopts = "NUT"
   revision = "c2a7a6ca930a4cd0bc33a3f298eb71960732a3a7"
   version = "v0.0.7"
+
+[[projects]]
+  digest = "1:70ef8268170621826f8c111ac1674afe75136f526f449453b4a6631c6dba1946"
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "3ee7d812e62a0804a7d0a324e0249ca2db3476d3"
+  version = "v0.0.4"
 
 [[projects]]
   digest = "1:5985ef4caf91ece5d54817c11ea25f182697534f8ae6521eadcd628c142ac4b6"
@@ -1439,7 +1463,9 @@
     "github.com/docker/go-metrics",
     "github.com/ghodss/yaml",
     "github.com/gobuffalo/packr/v2",
+    "github.com/gobuffalo/packr/v2/file/resolver",
     "github.com/hashicorp/go-multierror",
+    "github.com/landoop/tableprinter",
     "github.com/masterminds/semver",
     "github.com/mmcdole/gofeed/atom",
     "github.com/pkg/errors",

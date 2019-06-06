@@ -73,12 +73,12 @@ func (p *Porter) ListBundles(opts printer.PrintOptions) error {
 		}
 
 		printClaimRow :=
-			func(v interface{}) []interface{} {
+			func(v interface{}) []string {
 				cl, ok := v.(CondensedClaim)
 				if !ok {
 					return nil
 				}
-				return []interface{}{cl.Name, tp.Format(cl.Created), tp.Format(cl.Modified), cl.Action, cl.Status}
+				return []string{cl.Name, tp.Format(cl.Created), tp.Format(cl.Modified), cl.Action, cl.Status}
 			}
 		return printer.PrintTable(p.Out, condensedClaims, printClaimRow,
 			"NAME", "CREATED", "MODIFIED", "LAST ACTION", "LAST STATUS")
