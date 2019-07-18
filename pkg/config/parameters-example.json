@@ -1,0 +1,22 @@
+{
+"parameters": {
+    "fields": {
+      "backend_port": {
+        "applyTo": [
+          "install",
+          "action1",
+          "action2"
+        ],
+        "definition": "http_port",
+        "description": "The port that the backend will listen on",
+        "destination": {
+          "env": "MY_ENV_VAR",
+          "path": "/my/destination/path"
+        }
+      }
+    },
+    "required": [
+      "backend_port"
+    ]
+  }
+}

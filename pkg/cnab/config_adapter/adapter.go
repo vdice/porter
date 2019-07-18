@@ -195,14 +195,14 @@ func (c *ManifestConverter) generateBundleOutputs(defs *definition.Definitions) 
 func (c *ManifestConverter) buildDefaultPorterParameters() []config.ParameterDefinition {
 	return []config.ParameterDefinition{
 		{
-			Name:        "porter-debug",
-			Description: "Print debug information from Porter when executing the bundle",
+			Name: "porter-debug",
 			Destination: &config.Location{
 				EnvironmentVariable: "PORTER_DEBUG",
 			},
-			Schema: config.Schema{
-				Type:    "boolean",
-				Default: false,
+			Schema: definition.Schema{
+				Type:        "boolean",
+				Default:     false,
+				Description: "Print debug information from Porter when executing the bundle",
 			},
 		},
 	}

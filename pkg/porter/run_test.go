@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/deislabs/cnab-go/bundle/definition"
+
 	"github.com/deislabs/porter/pkg/config"
 	yaml "gopkg.in/yaml.v2"
 
@@ -125,14 +127,14 @@ func TestApplyBundleOutputs_Some_Match(t *testing.T) {
 		Outputs: []config.OutputDefinition{
 			{
 				Name: "foo",
-				Schema: config.Schema{
+				Schema: definition.Schema{
 					Type: "string",
 				},
 				Sensitive: true,
 			},
 			{
 				Name: "123",
-				Schema: config.Schema{
+				Schema: definition.Schema{
 					Type: "string",
 				},
 				Sensitive: false,
@@ -223,7 +225,7 @@ func TestApplyBundleOutputs_ApplyTo_True(t *testing.T) {
 				ApplyTo: []string{
 					"install",
 				},
-				Schema: config.Schema{
+				Schema: definition.Schema{
 					Type: "string",
 				},
 				Sensitive: false,

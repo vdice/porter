@@ -13,6 +13,8 @@ import (
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
+
+	definition "github.com/deislabs/cnab-go/bundle/definition"
 )
 
 type Manifest struct {
@@ -57,24 +59,10 @@ type Manifest struct {
 // ParameterDefinition defines a single parameter for a CNAB bundle
 type ParameterDefinition struct {
 	Name        string    `yaml:"name"`
-	Description string    `yaml:"description,omitempty"`
 	Sensitive   bool      `yaml:"sensitive"`
 	Destination *Location `yaml:"destination,omitempty"`
 
-	Schema `yaml:",inline"`
-}
-
-type Schema struct {
-	Type             string        `yaml:"type"`
-	Default          interface{}   `yaml:"default,omitempty"`
-	Enum             []interface{} `yaml:"enum,omitempty"`
-	Required         bool          `yaml:"required"`
-	Minimum          *float64      `yaml:"minimum,omitempty"`
-	ExclusiveMinimum *float64      `yaml:"exclusiveMinimum,omitempty"`
-	Maximum          *float64      `yaml:"maximum,omitempty"`
-	ExclusiveMaximum *float64      `yaml:"exclusiveMaximum,omitempty"`
-	MinLength        *float64      `yaml:"minLength,omitempty"`
-	MaxLength        *float64      `yaml:"maxLength,omitempty"`
+	definition.Schema `yaml:",inline"`
 }
 
 type CredentialDefinition struct {
@@ -123,12 +111,11 @@ type CustomActionDefinition struct {
 
 // OutputDefinition defines a single output for a CNAB
 type OutputDefinition struct {
-	Name        string   `yaml:"name"`
-	ApplyTo     []string `yaml:"applyTo,omitempty"`
-	Description string   `yaml:"description,omitempty"`
-	Sensitive   bool     `yaml:"sensitive"`
+	Name      string   `yaml:"name"`
+	ApplyTo   []string `yaml:"applyTo,omitempty"`
+	Sensitive bool     `yaml:"sensitive"`
 
-	Schema `yaml:",inline"`
+	definition.Schema `yaml:",inline"`
 }
 
 func (od *OutputDefinition) Validate() error {
@@ -214,6 +201,12 @@ type BundleConnection struct {
 }
 
 func UnmarshalManifest(manifestData []byte) (*Manifest, error) {
+	// TODO:
+	// Option: if Porter wants to retain a 'required: bool' field on its
+	// ParameterDefinition, we'll need to carve these off before attempting unmarshal
+	// Since, currently, definition.Schema is inline and it has its own, conflicting
+	// 'required: []string' field
+
 	// Unmarshal the manifest into the normal struct
 	manifest := &Manifest{}
 	err := yaml.Unmarshal(manifestData, &manifest)

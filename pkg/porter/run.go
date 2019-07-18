@@ -10,8 +10,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/deislabs/porter/pkg/context"
 	"github.com/deislabs/porter/pkg/config"
+	"github.com/deislabs/porter/pkg/context"
 	"github.com/deislabs/porter/pkg/mixin"
 )
 
@@ -258,11 +258,17 @@ func (p *Porter) ApplyBundleOutputs(opts RunOptions, outputs map[string]string) 
 
 					outpath := filepath.Join(config.BundleOutputsDir, bundleOutput.Name)
 
+					outputType, ok, err := bundleOutput.GetType()
+					if !ok {
+						return errors.Wrapf(err, "unable to get bundle output type for '%+v'",
+							bundleOutput.Type)
+					}
+
 					// Create data structure with relevant data for use in listing/showing later
 					output := Output{
 						Name:      bundleOutput.Name,
 						Sensitive: bundleOutput.Sensitive,
-						Type:      bundleOutput.Type,
+						Type:      outputType,
 						Value:     outputValue,
 					}
 

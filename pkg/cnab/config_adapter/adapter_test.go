@@ -227,21 +227,21 @@ func TestManifestConverter_generateBundleOutputs(t *testing.T) {
 
 	outputDefinitions := []config.OutputDefinition{
 		{
-			Name:        "output1",
-			Description: "Description of output1",
+			Name: "output1",
 			ApplyTo: []string{
 				"install",
 				"upgrade",
 			},
-			Schema: config.Schema{
-				Type: "string",
+			Schema: definition.Schema{
+				Type:        "string",
+				Description: "Description of output1",
 			},
 		},
 		{
-			Name:        "output2",
-			Description: "Description of output2",
-			Schema: config.Schema{
-				Type: "boolean",
+			Name: "output2",
+			Schema: definition.Schema{
+				Type:        "boolean",
+				Description: "Description of output2",
 			},
 		},
 	}
