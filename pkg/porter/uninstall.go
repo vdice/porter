@@ -38,8 +38,15 @@ func (p *Porter) UninstallBundle(opts UninstallOptions) error {
 		return err
 	}
 
+	opRelocator, err := makeOpRelocator(opts.RelocationMapping)
+	if err != nil {
+		return err
+	}
+	actionArgs := opts.ToActionArgs(deperator)
+	actionArgs.OperationConfigs = append(actionArgs.OperationConfigs, opRelocator)
+
 	fmt.Fprintf(p.Out, "uninstalling %s...\n", opts.Name)
-	err = p.CNAB.Uninstall(opts.ToActionArgs(deperator))
+	err = p.CNAB.Uninstall(actionArgs)
 	if err != nil {
 		if len(deperator.deps) > 0 {
 			return errors.Wrapf(err, "failed to uninstall the %s bundle, the remaining dependencies were not uninstalled", opts.Name)

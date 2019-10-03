@@ -103,6 +103,8 @@ For example, the 'debug' driver may be specified, which simply logs the info giv
 		"Use a bundle in an OCI registry specified by the given tag")
 	f.BoolVar(&opts.InsecureRegistry, "insecure-registry", false,
 		"Don't require TLS for the registry")
+	f.StringVarP(&opts.RelocationMapping, "relocation-mapping", "m", "", "Path of relocation mapping JSON file")
+
 	return cmd
 }
 

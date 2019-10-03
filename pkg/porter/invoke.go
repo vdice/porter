@@ -56,6 +56,13 @@ func (p *Porter) InvokeBundle(opts InvokeOptions) error {
 		return err
 	}
 
+	opRelocator, err := makeOpRelocator(opts.RelocationMapping)
+	if err != nil {
+		return err
+	}
+	actionArgs := opts.ToActionArgs(deperator)
+	actionArgs.OperationConfigs = append(actionArgs.OperationConfigs, opRelocator)
+
 	fmt.Fprintf(p.Out, "invoking custom action %s on %s...\n", opts.Action, opts.Name)
-	return p.CNAB.Invoke(opts.Action, opts.ToActionArgs(deperator))
+	return p.CNAB.Invoke(opts.Action, actionArgs)
 }

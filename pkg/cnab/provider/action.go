@@ -28,13 +28,17 @@ type ActionArguments struct {
 
 	// Driver is the CNAB-compliant driver used to run bundle actions.
 	Driver string
+
+	// OperationConfigs is the set of action.OperationConfigs that can be applied to the operation
+	OperationConfigs action.OperationConfigs
 }
 
-func (d *Runtime) ApplyConfig(args ActionArguments) action.OperationConfigs {
-	return action.OperationConfigs{
-		d.SetOutput(),
-		d.AddFiles(args),
-	}
+func (d *Runtime) ApplyDefaultConfig(args ActionArguments) action.OperationConfigs {
+	opConfigs := args.OperationConfigs
+	opConfigs = append(opConfigs, d.SetOutput())
+	opConfigs = append(opConfigs, d.AddFiles(args))
+
+	return opConfigs
 }
 
 func (d *Runtime) SetOutput() action.OperationConfigFunc {

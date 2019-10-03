@@ -43,6 +43,13 @@ func (p *Porter) UpgradeBundle(opts UpgradeOptions) error {
 		return err
 	}
 
+	opRelocator, err := makeOpRelocator(opts.RelocationMapping)
+	if err != nil {
+		return err
+	}
+	actionArgs := opts.ToActionArgs(deperator)
+	actionArgs.OperationConfigs = append(actionArgs.OperationConfigs, opRelocator)
+
 	fmt.Fprintf(p.Out, "upgrading %s...\n", opts.Name)
-	return p.CNAB.Upgrade(opts.ToActionArgs(deperator))
+	return p.CNAB.Upgrade(actionArgs)
 }

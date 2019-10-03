@@ -61,7 +61,7 @@ func (d *Runtime) Invoke(action string, args ActionArguments) error {
 	}
 
 	// Run the action and ALWAYS write out a claim, even if the action fails
-	runErr := i.Run(&c, creds, d.ApplyConfig(args)...)
+	runErr := i.Run(&c, creds, d.ApplyDefaultConfig(args)...)
 
 	// ALWAYS write out a claim, even if the action fails
 	saveErr := claims.Store(c)

@@ -62,7 +62,7 @@ func (d *Runtime) Upgrade(args ActionArguments) error {
 	}
 
 	// Upgrade and capture error
-	runErr := i.Run(&c, creds, d.ApplyConfig(args)...)
+	runErr := i.Run(&c, creds, d.ApplyDefaultConfig(args)...)
 
 	// ALWAYS write out a claim, even if the upgrade fails
 	saveErr := claims.Store(c)

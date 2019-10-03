@@ -288,6 +288,14 @@
   source = "github.com/vdice/cnab-go"
 
 [[projects]]
+  digest = "1:9faddc5a8bcf497ccc77f7b61da8c76b1de1c2bea3fb4740d73a949deb0b64ba"
+  name = "github.com/deislabs/porter-helm"
+  packages = ["pkg/helm/packrd"]
+  pruneopts = "NUT"
+  revision = "7cf23934defa610852162e2940f0eeb2edab3cd5"
+  version = "v0.3.0-ralpha.1+caipirinha"
+
+[[projects]]
   digest = "1:7a6852b35eb5bbc184561443762d225116ae630c26a7c4d90546619f1e7d2ad2"
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
@@ -1050,6 +1058,14 @@
   version = "v2.0.1"
 
 [[projects]]
+  digest = "1:ae1b883e03a35c1afd7c01b05668c7c36d9ecdd7e89c9638fbb0331953704810"
+  name = "github.com/pivotal/image-relocation"
+  packages = ["pkg/image"]
+  pruneopts = "NUT"
+  revision = "28a4e87a740db9ee4e0b105ec6bef4210558df47"
+  version = "v0.5"
+
+[[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -1678,6 +1694,7 @@
     "github.com/deislabs/cnab-go/driver/docker",
     "github.com/deislabs/cnab-go/driver/lookup",
     "github.com/deislabs/cnab-go/utils/crud",
+    "github.com/deislabs/porter-helm/pkg/helm/packrd",
     "github.com/docker/cli/cli/command",
     "github.com/docker/cli/cli/config",
     "github.com/docker/cli/cli/flags",
@@ -1696,6 +1713,7 @@
     "github.com/hashicorp/go-multierror",
     "github.com/mmcdole/gofeed/atom",
     "github.com/olekukonko/tablewriter",
+    "github.com/pivotal/image-relocation/pkg/image",
     "github.com/pkg/errors",
     "github.com/spf13/afero",
     "github.com/spf13/cobra",

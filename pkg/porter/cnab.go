@@ -71,6 +71,9 @@ type sharedOptions struct {
 	// Driver is the CNAB-compliant driver used to run bundle actions.
 	Driver string
 
+	// RelocationMapping is the path to the relocation mapping file
+	RelocationMapping string
+
 	// parsedParams is the parsed set of parameters from Params.
 	parsedParams map[string]string
 

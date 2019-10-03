@@ -60,7 +60,7 @@ func (d *Runtime) Install(args ActionArguments) error {
 	}
 
 	// Install and capture error
-	runErr := i.Run(c, creds, d.ApplyConfig(args)...)
+	runErr := i.Run(c, creds, d.ApplyDefaultConfig(args)...)
 
 	// ALWAYS write out a claim, even if the installation fails
 	claimStore, err := d.NewClaimStore()

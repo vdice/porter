@@ -241,7 +241,6 @@ func TestManifestConverter_generateImages(t *testing.T) {
 		Digest:        "abc123",
 		Size:          12,
 		MediaType:     "download",
-		OriginalImage: "deis/myserver:1.0.0",
 		Labels: map[string]string{
 			"OS":           "linux",
 			"Architecture": "amd64",

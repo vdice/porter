@@ -65,7 +65,7 @@ func (d *Runtime) Uninstall(args ActionArguments) error {
 		fmt.Fprintf(d.Err, "uninstalling bundle %s (%s) as %s\n\tparams: %v\n\tcreds: %v\n", c.Bundle.Name, args.BundlePath, c.Name, paramKeys, credKeys)
 	}
 
-	err = i.Run(&c, creds, d.ApplyConfig(args)...)
+	err = i.Run(&c, creds, d.ApplyDefaultConfig(args)...)
 	if err != nil {
 		return errors.Wrap(err, "failed to uninstall the bundle")
 	}
