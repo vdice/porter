@@ -8,10 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cbroglie/mustache"
 	"github.com/deislabs/porter/pkg/config"
 	"github.com/deislabs/porter/pkg/context"
 	"github.com/deislabs/porter/pkg/manifest"
 	"github.com/deislabs/porter/pkg/mixin"
+	"github.com/deislabs/porter/pkg/runtime"
 	"github.com/deislabs/porter/pkg/templates"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -204,7 +206,7 @@ func (g *DockerfileGenerator) getMixinBuildInput(m string) mixin.BuildInput {
 
 	for _, mixinDecl := range g.Manifest.Mixins {
 		if m == mixinDecl.Name {
-			input.Config = mixinDecl.Config
+			input.Config = g.resolveMixinConfig(&mixinDecl)
 		}
 	}
 
@@ -227,6 +229,39 @@ func (g *DockerfileGenerator) getMixinBuildInput(m string) mixin.BuildInput {
 	}
 
 	return input
+}
+
+// resolveMixinConfig will walk through the Mixin config and resolve any placeholder
+// data using the definitions in the manifest, like parameters or credentials.
+func (g *DockerfileGenerator) resolveMixinConfig(mixin *manifest.MixinDeclaration) error {
+	if mixin.Config != nil {
+		mustache.AllowMissingVariables = false
+
+		// We're not technically in a runtime state here; no action is running yet - refactor?
+		runtimeManifest := runtime.NewRuntimeManifest(g.Context, manifest.ActionInstall, g.Manifest)
+
+		sourceData, err := runtimeManifest.BuildSourceData()
+		if err != nil {
+			return errors.Wrap(err, "unable to resolve mixin config: unable to populate source data")
+		}
+
+		payload, err := yaml.Marshal(mixin)
+		if err != nil {
+			return err
+		}
+
+		rendered, err := mustache.Render(string(payload), sourceData)
+		if err != nil {
+			return errors.Wrapf(err, "unable to resolve mixin config: unable to render template %s", string(payload))
+		}
+
+		err = yaml.Unmarshal([]byte(rendered), mixin)
+		if err != nil {
+			return errors.Wrap(err, "unable to resolve mixin config: invalid step yaml")
+		}
+	}
+
+	return nil
 }
 
 func (g *DockerfileGenerator) PrepareFilesystem() error {

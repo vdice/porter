@@ -166,7 +166,7 @@ type StepOutput struct {
 	Data map[string]interface{} `yaml:",inline"`
 }
 
-func (m *RuntimeManifest) buildSourceData() (map[string]interface{}, error) {
+func (m *RuntimeManifest) BuildSourceData() (map[string]interface{}, error) {
 	data := make(map[string]interface{})
 	m.sensitiveValues = []string{}
 	bun := make(map[string]interface{})
@@ -273,7 +273,7 @@ func (m *RuntimeManifest) buildSourceData() (map[string]interface{}, error) {
 // data using the definitions in the manifest, like parameters or credentials.
 func (m *RuntimeManifest) ResolveStep(step *manifest.Step) error {
 	mustache.AllowMissingVariables = false
-	sourceData, err := m.buildSourceData()
+	sourceData, err := m.BuildSourceData()
 	if err != nil {
 		return errors.Wrap(err, "unable to resolve step: unable to populate source data")
 	}
