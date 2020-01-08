@@ -14,6 +14,8 @@ import (
 )
 
 func TestInstall_relativePathPorterHome(t *testing.T) {
+	t.Skip()
+
 	p := porter.NewTestPorter(t)
 
 	// Crux for this test: set Porter's home dir to a relative path
@@ -43,6 +45,8 @@ func TestInstall_relativePathPorterHome(t *testing.T) {
 }
 
 func TestInstall_fileParam(t *testing.T) {
+	t.Skip()
+
 	p := porter.NewTestPorter(t)
 	p.SetupIntegrationTest()
 	defer p.CleanupIntegrationTest()
