@@ -17,11 +17,11 @@ variable "backend_storage_container" {
     default = "tf-storage"
 }
 
-variable "server-name" {
+variable "server_name" {
     default = "mysql-bundle"
 }
 
-variable "mysql-admin" {
+variable "mysql_admin" {
    default = "myadmin"
 }
 

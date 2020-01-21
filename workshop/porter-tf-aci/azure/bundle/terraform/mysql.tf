@@ -10,7 +10,7 @@ resource "random_string" "name" {
 }
 
 resource "azurerm_mysql_server" "bundle" {
-  name                = "${var.server-name}"
+  name                = "${var.server_name}"
   location            = "EastUS"
   resource_group_name = "devops-days-msp"
 
@@ -27,7 +27,7 @@ resource "azurerm_mysql_server" "bundle" {
     geo_redundant_backup  = "Disabled"
   }
 
-  administrator_login          = "${var.mysql-admin}"
+  administrator_login          = "${var.mysql_admin}"
   administrator_login_password = "${random_string.password.result}"
   version                      = "5.7"
   ssl_enforcement              = "Disabled"
