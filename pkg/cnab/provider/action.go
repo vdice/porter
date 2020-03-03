@@ -57,17 +57,6 @@ func (d *Runtime) AddFiles(args ActionArguments) action.OperationConfigFunc {
 			op.Files[k] = v
 		}
 
-		// Add claim.json to file list as well, if exists
-		claimName := args.Claim
-		claim, err := d.claims.Read(claimName)
-		if err == nil {
-			claimBytes, err := yaml.Marshal(claim)
-			if err != nil {
-				return errors.Wrapf(err, "could not marshal claim %s", claimName)
-			}
-			op.Files[config.ClaimFilepath] = string(claimBytes)
-		}
-
 		return nil
 	}
 }
