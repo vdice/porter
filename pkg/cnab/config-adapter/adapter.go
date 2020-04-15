@@ -360,7 +360,7 @@ func lookupExtensionKey(name string) string {
 	// If an official supported extension, we grab the full key
 	supportedExt, err := extensions.GetSupportedExtension(name)
 	if err != nil {
-		// TODO: Issue linter warning
+		// TODO: Linter warning should be caught during linting... what do we want to do here?
 	} else {
 		key = supportedExt.Key
 	}

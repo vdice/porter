@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"get.porter.sh/porter/pkg/cnab/extensions"
 	"get.porter.sh/porter/pkg/context"
 	"get.porter.sh/porter/pkg/manifest"
 	"get.porter.sh/porter/pkg/mixin/query"
@@ -152,8 +153,16 @@ func New(cxt *context.Context, mixins pkgmgmt.PackageManager) *Linter {
 }
 
 func (l *Linter) Lint(m *manifest.Manifest) (Results, error) {
-	// TODO: perform any porter level linting
-	// e.g. metadata, credentials, properties, outputs, dependencies, etc
+	var results Results
+
+	if l.Debug {
+		fmt.Fprintln(l.Err, "Linting the Porter manifest...")
+	}
+	requiredResults, err := l.lintRequired(m)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to lint the required section of the manifest")
+	}
+	results = append(results, requiredResults...)
 
 	if l.Debug {
 		fmt.Fprintln(l.Err, "Running linters for each mixin used in the manifest...")
@@ -165,7 +174,6 @@ func (l *Linter) Lint(m *manifest.Manifest) (Results, error) {
 		return nil, err
 	}
 
-	var results Results
 	for mixin, response := range responses {
 		var r Results
 		err = json.Unmarshal([]byte(response), &r)
@@ -174,6 +182,37 @@ func (l *Linter) Lint(m *manifest.Manifest) (Results, error) {
 		}
 
 		results = append(results, r...)
+	}
+
+	return results, nil
+}
+
+// TODO: should this live in pkg/cnab/extensions/required.go?  Or pkg/manifest?
+func (l *Linter) lintRequired(m *manifest.Manifest) (Results, error) {
+	results := make(Results, 0)
+
+	for _, ext := range m.Required {
+		supportedExt, err := extensions.GetSupportedExtension(ext.Name)
+		if err != nil || supportedExt == nil {
+			result := Result{
+				Level: LevelWarning,
+				Code:  "manifest-required-100",
+				// TODO: none of these apply to sections of the manifest outside of an action...
+				Location: Location{
+					// TODO: generify that it can be any section of a manifest,
+					// not just an Action
+					Action: "TODO",
+					// TODO: generify such that it needn't be tied to a mixin
+					Mixin:           "TODO",
+					StepNumber:      1, // We index from 1 for natural counting, 1st, 2nd, etc.
+					StepDescription: "TODO",
+				},
+				Title:   "Required Extensions: Unsupported Extension",
+				Message: fmt.Sprintf("%q is not an extension currently supported by Porter", ext.Name),
+				URL:     "https://porter.sh/author-bundles/#required",
+			}
+			results = append(results, result)
+		}
 	}
 
 	return results, nil
