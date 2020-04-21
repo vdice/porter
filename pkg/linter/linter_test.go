@@ -72,13 +72,33 @@ func TestLinter_Lint(t *testing.T) {
 
 }
 
-func TestLinter_Lint_ErrorTypes(t *testing.T) {
+func TestLinter_Lint_Required(t *testing.T) {
+	t.Run("required extensions - supported", func(t *testing.T) {
+		cxt := context.NewTestContext(t)
+		mixins := mixin.NewTestMixinProvider()
+		l := New(cxt.Context, mixins)
+		m := &manifest.Manifest{
+			Required: []manifest.RequiredExtension{
+				{
+					Name: "docker",
+				},
+			},
+		}
+
+		results, err := l.Lint(m)
+		require.NoError(t, err, "Lint failed")
+		require.Len(t, results, 0, "linter should not have returned any results")
+	})
+
 	t.Run("required extensions - unsupported", func(t *testing.T) {
 		cxt := context.NewTestContext(t)
 		mixins := mixin.NewTestMixinProvider()
 		l := New(cxt.Context, mixins)
 		m := &manifest.Manifest{
 			Required: []manifest.RequiredExtension{
+				{
+					Name: "docker",
+				},
 				{
 					Name: "foo",
 				},
@@ -87,15 +107,14 @@ func TestLinter_Lint_ErrorTypes(t *testing.T) {
 		lintResults := Results{
 			{
 				Level:   LevelWarning,
-				Code:    "manifest-required-100",
+				Code:    CodeUnsupportedRequiredExtension,
 				Title:   "Required Extensions: Unsupported Extension",
 				Message: `"foo" is not an extension currently supported by Porter`,
 				URL:     "https://porter.sh/author-bundles/#required",
 				Location: Location{
-					Action:          "TODO",
-					Mixin:           "TODO",
-					StepNumber:      1,
-					StepDescription: "TODO",
+					Data: RequiredLocation{
+						Number: 2,
+					},
 				},
 			},
 		}
@@ -104,5 +123,6 @@ func TestLinter_Lint_ErrorTypes(t *testing.T) {
 		require.NoError(t, err, "Lint failed")
 		require.Len(t, results, 1, "linter should have returned 1 result")
 		require.Equal(t, lintResults, results, "unexpected lint results")
+		require.Contains(t, results[0].String(), "2nd extension in the required section")
 	})
 }

@@ -65,6 +65,50 @@ type Result struct {
 	URL string
 }
 
+// Location represents generic location data
+type Location struct {
+	Data interface{}
+}
+
+// UnmarshalJSON unmarshals Location data into the appropriate location type
+func (u *Location) UnmarshalJSON(data []byte) error {
+	// Try unmarshaling to the supported Location types
+
+	// ActionLocation
+	al := map[string]ActionLocation{}
+	err := json.Unmarshal(data, &al)
+	if _, ok := err.(*json.UnmarshalTypeError); err != nil && !ok {
+		return err
+	}
+	if al["Data"].Action != "" {
+		u.Data = al["Data"]
+		return nil
+	}
+
+	// RequiredLocation
+	rl := map[string]RequiredLocation{}
+	err = json.Unmarshal(data, &rl)
+	if _, ok := err.(*json.UnmarshalTypeError); err != nil && !ok {
+		return err
+	}
+	if rl["Data"].Number != 0 {
+		u.Data = al["Data"]
+		return nil
+	}
+
+	return nil
+}
+
+func (u Location) String() string {
+	switch d := u.Data.(type) {
+	case ActionLocation:
+		return d.String()
+	case RequiredLocation:
+		return d.String()
+	}
+	return ""
+}
+
 func (r Result) String() string {
 	var buffer strings.Builder
 	buffer.WriteString(fmt.Sprintf("%s(%s) - %s\n", r.Level, r.Code, r.Title))
@@ -82,8 +126,8 @@ func (r Result) String() string {
 	return buffer.String()
 }
 
-// Location identifies the offending mixin step within a manifest.
-type Location struct {
+// ActionLocation identifies a location related to an action in a manifest.
+type ActionLocation struct {
 	// Action containing the step, e.g. Install.
 	Action string
 
@@ -110,7 +154,7 @@ type Location struct {
 	StepDescription string
 }
 
-func (l Location) String() string {
+func (l ActionLocation) String() string {
 	return fmt.Sprintf("%s: %s step in the %s mixin (%s)",
 		l.Action, humanize.Ordinal(l.StepNumber), l.Mixin, l.StepDescription)
 }
@@ -187,25 +231,40 @@ func (l *Linter) Lint(m *manifest.Manifest) (Results, error) {
 	return results, nil
 }
 
+// RequiredLocation identifies a location related to the required section in a manifest.
+type RequiredLocation struct {
+	// Number is the position of the required extension, starting from 1
+	// Example
+	// required:
+	//  - docker: (1)
+	//     ...
+	//  - donuts: (2)
+	//     ...
+	Number int
+}
+
+func (l RequiredLocation) String() string {
+	return fmt.Sprintf("%s extension in the required section",
+		humanize.Ordinal(l.Number))
+}
+
+// CodeUnsupportedRequiredExtension is the linter code for an unsupported required extension
+const CodeUnsupportedRequiredExtension = "required-100"
+
 // TODO: should this live in pkg/cnab/extensions/required.go?  Or pkg/manifest?
 func (l *Linter) lintRequired(m *manifest.Manifest) (Results, error) {
 	results := make(Results, 0)
 
-	for _, ext := range m.Required {
+	for num, ext := range m.Required {
 		supportedExt, err := extensions.GetSupportedExtension(ext.Name)
 		if err != nil || supportedExt == nil {
 			result := Result{
 				Level: LevelWarning,
-				Code:  "manifest-required-100",
-				// TODO: none of these apply to sections of the manifest outside of an action...
+				Code:  CodeUnsupportedRequiredExtension,
 				Location: Location{
-					// TODO: generify that it can be any section of a manifest,
-					// not just an Action
-					Action: "TODO",
-					// TODO: generify such that it needn't be tied to a mixin
-					Mixin:           "TODO",
-					StepNumber:      1, // We index from 1 for natural counting, 1st, 2nd, etc.
-					StepDescription: "TODO",
+					Data: RequiredLocation{
+						Number: num + 1, // We index from 1 for natural counting, 1st, 2nd, etc.
+					},
 				},
 				Title:   "Required Extensions: Unsupported Extension",
 				Message: fmt.Sprintf("%q is not an extension currently supported by Porter", ext.Name),

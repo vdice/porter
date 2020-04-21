@@ -69,10 +69,12 @@ func (m *Mixin) Lint() (linter.Results, error) {
 				Level: linter.LevelWarning,
 				Code:  CodeEmbeddedBash,
 				Location: linter.Location{
-					Action:          action.Name,
-					Mixin:           "exec",
-					StepNumber:      stepNumber + 1, // We index from 1 for natural counting, 1st, 2nd, etc.
-					StepDescription: step.Description,
+					Data: linter.ActionLocation{
+						Action:          action.Name,
+						Mixin:           "exec",
+						StepNumber:      stepNumber + 1, // We index from 1 for natural counting, 1st, 2nd, etc.
+						StepDescription: step.Description,
+					},
 				},
 				Title:   "Best Practice: Avoid Embedded Bash",
 				Message: "",
@@ -87,10 +89,12 @@ func (m *Mixin) Lint() (linter.Results, error) {
 						Level: linter.LevelError,
 						Code:  CodeBashCArgMissingQuotes,
 						Location: linter.Location{
-							Action:          action.Name,
-							Mixin:           "exec",
-							StepNumber:      stepNumber + 1,
-							StepDescription: step.Description,
+							Data: linter.ActionLocation{
+								Action:          action.Name,
+								Mixin:           "exec",
+								StepNumber:      stepNumber + 1,
+								StepDescription: step.Description,
+							},
 						},
 						Title: "bash -c argument missing wrapping quotes",
 						Message: `The bash -c flag argument must be wrapped in quotes, for example

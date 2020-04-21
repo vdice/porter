@@ -23,17 +23,21 @@ func TestMixin_Lint(t *testing.T) {
 
 	var gotInstallError linter.Result
 	for _, r := range results {
-		if r.Location.Action == "install" && r.Code == CodeBashCArgMissingQuotes {
-			gotInstallError = r
+		if loc, ok := r.Location.Data.(linter.ActionLocation); ok {
+			if loc.Action == "install" && r.Code == CodeBashCArgMissingQuotes {
+				gotInstallError = r
+			}
 		}
 	}
 	wantInstallError := linter.Result{
 		Level: linter.LevelError,
 		Location: linter.Location{
-			Action:          "install",
-			Mixin:           "exec",
-			StepNumber:      2,
-			StepDescription: "Install Hello World",
+			Data: linter.ActionLocation{
+				Action:          "install",
+				Mixin:           "exec",
+				StepNumber:      2,
+				StepDescription: "Install Hello World",
+			},
 		},
 		Code:  CodeBashCArgMissingQuotes,
 		Title: "bash -c argument missing wrapping quotes",

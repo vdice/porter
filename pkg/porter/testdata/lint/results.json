@@ -2,10 +2,12 @@
   {
     "Level": 0,
     "Location": {
-      "Action": "install",
-      "Mixin": "exec",
-      "StepNumber": 2,
-      "StepDescription": "Install Hello World"
+      "Data": {
+        "Action": "install",
+        "Mixin": "exec",
+        "StepNumber": 2,
+        "StepDescription": "Install Hello World"
+      }
     },
     "Code": "exec-100",
     "Title": "bash -c argument missing wrapping quotes",

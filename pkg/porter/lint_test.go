@@ -35,10 +35,12 @@ func TestPorter_PrintLintResults(t *testing.T) {
 		{
 			Level: linter.LevelError,
 			Location: linter.Location{
-				Action:          "install",
-				Mixin:           "exec",
-				StepNumber:      2,
-				StepDescription: "Install Hello World",
+				Data: linter.ActionLocation{
+					Action:          "install",
+					Mixin:           "exec",
+					StepNumber:      2,
+					StepDescription: "Install Hello World",
+				},
 			},
 			Code:  "exec-100",
 			Title: "bash -c argument missing wrapping quotes",
