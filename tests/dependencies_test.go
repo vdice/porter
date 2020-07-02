@@ -63,7 +63,11 @@ func installWordpressBundle(p *porter.TestPorter) (namespace string) {
 	p.CopyDirectory(filepath.Join(p.TestDir, "../build/testdata/bundles/wordpress"), ".", false)
 
 	namespace = randomString(10)
-	installOpts := porter.InstallOptions{}
+	installOpts := porter.InstallOptions{
+		BundleLifecycleOpts: porter.BundleLifecycleOpts{
+			AllowAccessToDockerHost: true,
+		},
+	}
 	installOpts.CredentialIdentifiers = []string{"ci"}
 	installOpts.Params = []string{
 		"wordpress-password=mypassword",
@@ -101,7 +105,11 @@ func cleanupWordpressBundle(p *porter.TestPorter) {
 	assert.NoError(p.T(), err, "uninstall failed for dependent bundle")
 
 	// Uninstall the bundle
-	uninstallOpts = porter.UninstallOptions{}
+	uninstallOpts = porter.UninstallOptions{
+		BundleLifecycleOpts: porter.BundleLifecycleOpts{
+			AllowAccessToDockerHost: true,
+		},
+	}
 	uninstallOpts.CredentialIdentifiers = []string{"ci"}
 	err = uninstallOpts.Validate([]string{}, p.Context)
 	assert.NoError(p.T(), err, "validation of uninstall opts failed for dependent bundle")
@@ -111,7 +119,11 @@ func cleanupWordpressBundle(p *porter.TestPorter) {
 }
 
 func upgradeWordpressBundle(p *porter.TestPorter, namespace string) {
-	upgradeOpts := porter.UpgradeOptions{}
+	upgradeOpts := porter.UpgradeOptions{
+		BundleLifecycleOpts: porter.BundleLifecycleOpts{
+			AllowAccessToDockerHost: true,
+		},
+	}
 	upgradeOpts.CredentialIdentifiers = []string{"ci"}
 	upgradeOpts.Params = []string{ // See https://github.com/deislabs/porter/issues/474
 		"wordpress-password=mypassword",
@@ -139,7 +151,12 @@ func upgradeWordpressBundle(p *porter.TestPorter, namespace string) {
 }
 
 func invokeWordpressBundle(p *porter.TestPorter, namespace string) {
-	invokeOpts := porter.InvokeOptions{Action: "ping"}
+	invokeOpts := porter.InvokeOptions{
+		Action: "ping",
+		BundleLifecycleOpts: porter.BundleLifecycleOpts{
+			AllowAccessToDockerHost: true,
+		},
+	}
 	invokeOpts.CredentialIdentifiers = []string{"ci"}
 	invokeOpts.Params = []string{ // See https://github.com/deislabs/porter/issues/474
 		"wordpress-password=mypassword",
@@ -167,7 +184,11 @@ func invokeWordpressBundle(p *porter.TestPorter, namespace string) {
 }
 
 func uninstallWordpressBundle(p *porter.TestPorter, namespace string) {
-	uninstallOptions := porter.UninstallOptions{}
+	uninstallOptions := porter.UninstallOptions{
+		BundleLifecycleOpts: porter.BundleLifecycleOpts{
+			AllowAccessToDockerHost: true,
+		},
+	}
 	uninstallOptions.CredentialIdentifiers = []string{"ci"}
 	uninstallOptions.Params = []string{ // See https://github.com/deislabs/porter/issues/474
 		"wordpress-password=mypassword",

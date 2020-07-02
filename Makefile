@@ -12,7 +12,7 @@ PORTER_HOME = bin
 
 CLIENT_PLATFORM = $(shell go env GOOS)
 CLIENT_ARCH = $(shell go env GOARCH)
-CLIENT_GOPATH=$(shell go env GOPATH)
+CLIENT_GOPATH = $(shell go env GOPATH)
 RUNTIME_PLATFORM = linux
 RUNTIME_ARCH = amd64
 BASEURL_FLAG ?= 
