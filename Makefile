@@ -12,7 +12,7 @@ PORTER_HOME = bin
 
 CLIENT_PLATFORM = $(shell go env GOOS)
 CLIENT_ARCH = $(shell go env GOARCH)
-CLIENT_GOPATH=$(shell go env GOPATH)
+CLIENT_GOPATH = $(shell go env GOPATH)
 RUNTIME_PLATFORM = linux
 RUNTIME_ARCH = amd64
 BASEURL_FLAG ?= 
@@ -79,11 +79,11 @@ test: clean-last-testrun test-unit test-integration test-cli
 test-unit:
 	$(GO) test ./...
 
-test-integration: build
+test-integration: clean-last-testrun build start-local-docker-registry
 	$(GO) build -o $(PORTER_HOME)/testplugin ./cmd/testplugin
 	PROJECT_ROOT=$(shell pwd) $(GO) test -timeout 20m -tags=integration ./...
 
-test-cli: clean-last-testrun build init-porter-home-for-ci
+test-cli: clean-last-testrun build init-porter-home-for-ci start-local-docker-registry
 	REGISTRY=$(REGISTRY) KUBECONFIG=$(KUBECONFIG) ./scripts/test/test-cli.sh
 
 init-porter-home-for-ci:
@@ -124,6 +124,14 @@ publish-mixins:
 
 publish-images:
 	VERSION=$(VERSION) PERMALINK=$(PERMALINK) ./scripts/publish-images.sh
+
+start-local-docker-registry:
+	@docker run -d -p 5000:5000 --name registry registry:2
+
+stop-local-docker-registry:
+	@if $$(docker inspect registry > /dev/null 2>&1); then \
+		docker kill registry && docker rm registry ; \
+	fi
 
 # all-bundles loops through all items under the dir provided by the first argument
 # and if the item is a sub-directory containing a porter.yaml file,
@@ -201,7 +209,7 @@ clean: clean-mixins clean-last-testrun
 clean-mixins:
 	-rm -fr bin/
 
-clean-last-testrun:
+clean-last-testrun: stop-local-docker-registry
 	-rm -fr cnab/ porter.yaml Dockerfile bundle.json
 
 clean-packr: packr2
