@@ -40,7 +40,7 @@ func (p *Porter) Archive(opts ArchiveOptions) error {
 		return errors.Wrap(err, "unable to pull bundle before building archive")
 	}
 
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	if err != nil {
 		return err
 	}

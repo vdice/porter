@@ -22,7 +22,7 @@ func (p *Porter) UninstallBundle(opts UninstallOptions) error {
 		return errors.Wrap(err, "unable to pull bundle before uninstall")
 	}
 
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	if err != nil {
 		return err
 	}

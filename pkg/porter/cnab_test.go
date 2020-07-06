@@ -18,7 +18,7 @@ func TestSharedOptions_defaultBundleFiles(t *testing.T) {
 	_, err := cxt.FileSystem.Create(filepath.Join(pwd, "porter.yaml"))
 	require.NoError(t, err)
 
-	opts := sharedOptions{}
+	opts := SharedOptions{}
 	err = opts.defaultBundleFiles(cxt.Context)
 	require.NoError(t, err)
 
@@ -29,7 +29,7 @@ func TestSharedOptions_defaultBundleFiles(t *testing.T) {
 func TestSharedOptions_defaultBundleFiles_AltManifest(t *testing.T) {
 	cxt := context.NewTestContext(t)
 
-	opts := sharedOptions{
+	opts := SharedOptions{
 		bundleFileOptions: bundleFileOptions{
 			File: "mybun/porter.yaml",
 		},
@@ -62,7 +62,7 @@ func TestSharedOptions_validateBundleJson(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			opts := sharedOptions{
+			opts := SharedOptions{
 				bundleFileOptions: bundleFileOptions{
 					CNABFile: tc.cnabFile,
 				},
@@ -82,7 +82,7 @@ func TestSharedOptions_validateBundleJson(t *testing.T) {
 }
 
 func TestSharedOptions_defaultDriver(t *testing.T) {
-	opts := sharedOptions{}
+	opts := SharedOptions{}
 
 	opts.defaultDriver()
 

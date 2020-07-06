@@ -22,7 +22,7 @@ func (p *Porter) UpgradeBundle(opts UpgradeOptions) error {
 		return errors.Wrap(err, "unable to pull bundle before upgrade")
 	}
 
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	if err != nil {
 		return err
 	}

@@ -50,8 +50,8 @@ func (o *bundleFileOptions) Validate(cxt *context.Context) error {
 	return err
 }
 
-// sharedOptions are common options that apply to multiple CNAB actions.
-type sharedOptions struct {
+// SharedOptions are common options that apply to multiple CNAB actions.
+type SharedOptions struct {
 	bundleFileOptions
 
 	// Name of the instance. Defaults to the name of the bundle.
@@ -76,7 +76,7 @@ type sharedOptions struct {
 // Validate prepares for an action and validates the options.
 // For example, relative paths are converted to full paths and then checked that
 // they exist and are accessible.
-func (o *sharedOptions) Validate(args []string, cxt *context.Context) error {
+func (o *SharedOptions) Validate(args []string, cxt *context.Context) error {
 	err := o.validateInstanceName(args)
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func (o *sharedOptions) Validate(args []string, cxt *context.Context) error {
 }
 
 // validateInstanceName grabs the claim name from the first positional argument.
-func (o *sharedOptions) validateInstanceName(args []string) error {
+func (o *SharedOptions) validateInstanceName(args []string) error {
 	if len(args) == 1 {
 		o.Name = args[0]
 	} else if len(args) > 1 {
@@ -200,7 +200,7 @@ func (o *bundleFileOptions) validateCNABFile(cxt *context.Context) error {
 	return nil
 }
 
-func (o *sharedOptions) validateParams(cxt *context.Context) error {
+func (o *SharedOptions) validateParams(cxt *context.Context) error {
 	err := o.parseParams()
 	if err != nil {
 		return err
@@ -210,7 +210,7 @@ func (o *sharedOptions) validateParams(cxt *context.Context) error {
 }
 
 // parsedParams parses the variable assignments in Params.
-func (o *sharedOptions) parseParams() error {
+func (o *SharedOptions) parseParams() error {
 	p, err := parameters.ParseVariableAssignments(o.Params)
 	if err != nil {
 		return err
@@ -220,14 +220,14 @@ func (o *sharedOptions) parseParams() error {
 }
 
 // defaultDriver supplies the default driver if none is specified
-func (o *sharedOptions) defaultDriver() {
+func (o *SharedOptions) defaultDriver() {
 	if o.Driver == "" {
 		o.Driver = DefaultDriver
 	}
 }
 
 // validateDriver validates that the provided driver is supported by Porter
-func (o *sharedOptions) validateDriver() error {
+func (o *SharedOptions) validateDriver() error {
 	switch o.Driver {
 	case DockerDriver, DebugDriver:
 		return nil

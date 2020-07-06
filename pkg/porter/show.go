@@ -11,19 +11,19 @@ import (
 
 // ShowOptions represent options for showing a particular claim
 type ShowOptions struct {
-	sharedOptions
+	SharedOptions
 	printer.PrintOptions
 }
 
 // Validate prepares for a show bundle action and validates the args/options.
 func (so *ShowOptions) Validate(args []string, cxt *context.Context) error {
 	// Ensure only one argument exists (instance name) if args length non-zero
-	err := so.sharedOptions.validateInstanceName(args)
+	err := so.SharedOptions.validateInstanceName(args)
 	if err != nil {
 		return err
 	}
 
-	err = so.sharedOptions.defaultBundleFiles(cxt)
+	err = so.SharedOptions.defaultBundleFiles(cxt)
 	if err != nil {
 		return err
 	}
@@ -34,12 +34,12 @@ func (so *ShowOptions) Validate(args []string, cxt *context.Context) error {
 // ShowInstances shows a bundle, or more properly a bundle claim, along with any
 // associated outputs
 func (p *Porter) ShowInstances(opts ShowOptions) error {
-	err := p.applyDefaultOptions(&opts.sharedOptions)
+	err := p.applyDefaultOptions(&opts.SharedOptions)
 	if err != nil {
 		return err
 	}
 
-	c, err := p.Claims.Read(opts.sharedOptions.Name)
+	c, err := p.Claims.Read(opts.SharedOptions.Name)
 	if err != nil {
 		return err
 	}

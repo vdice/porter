@@ -118,7 +118,7 @@ func (s SortPrintableAction) Swap(i, j int) {
 var porterInternalParams = map[string]struct{}{"porter-debug": {}}
 
 func (o *ExplainOpts) Validate(args []string, cxt *context.Context) error {
-	err := o.sharedOptions.Validate(args, cxt)
+	err := o.SharedOptions.Validate(args, cxt)
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func (p *Porter) Explain(o ExplainOpts) error {
 		return errors.Wrap(err, "unable to pull bundle before invoking explain command")
 	}
 
-	err = p.applyDefaultOptions(&o.sharedOptions)
+	err = p.applyDefaultOptions(&o.SharedOptions)
 	if err != nil {
 		return err
 	}

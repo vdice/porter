@@ -14,13 +14,13 @@ import (
 
 // OutputShowOptions represent options for a bundle output show command
 type OutputShowOptions struct {
-	sharedOptions
+	SharedOptions
 	Output string
 }
 
 // OutputListOptions represent options for a bundle output list command
 type OutputListOptions struct {
-	sharedOptions
+	SharedOptions
 	printer.PrintOptions
 }
 
@@ -37,8 +37,8 @@ func (o *OutputShowOptions) Validate(args []string, cxt *context.Context) error 
 	}
 
 	// If not provided, attempt to derive claim name from context
-	if o.sharedOptions.Name == "" {
-		err := o.sharedOptions.defaultBundleFiles(cxt)
+	if o.SharedOptions.Name == "" {
+		err := o.SharedOptions.defaultBundleFiles(cxt)
 		if err != nil {
 			return errors.New("bundle instance name must be provided via [--instance|-i INSTANCE]")
 		}
@@ -51,13 +51,13 @@ func (o *OutputShowOptions) Validate(args []string, cxt *context.Context) error 
 // setting attributes of OutputListOptions as applicable
 func (o *OutputListOptions) Validate(args []string, cxt *context.Context) error {
 	// Ensure only one argument exists (claim name) if args length non-zero
-	err := o.sharedOptions.validateInstanceName(args)
+	err := o.SharedOptions.validateInstanceName(args)
 	if err != nil {
 		return err
 	}
 
 	// Attempt to derive claim name from context
-	err = o.sharedOptions.defaultBundleFiles(cxt)
+	err = o.SharedOptions.defaultBundleFiles(cxt)
 	if err != nil {
 		return errors.Wrap(err, "bundle instance name must be provided")
 	}
@@ -67,11 +67,11 @@ func (o *OutputListOptions) Validate(args []string, cxt *context.Context) error 
 
 // ShowBundleOutput shows a bundle output value, according to the provided options
 func (p *Porter) ShowBundleOutput(opts *OutputShowOptions) error {
-	err := p.applyDefaultOptions(&opts.sharedOptions)
+	err := p.applyDefaultOptions(&opts.SharedOptions)
 	if err != nil {
 		return err
 	}
-	name := opts.sharedOptions.Name
+	name := opts.SharedOptions.Name
 
 	output, err := p.ReadBundleOutput(opts.Output, name)
 	if err != nil {
@@ -152,7 +152,7 @@ func (p *Porter) ListBundleOutputs(c claim.Claim, format printer.Format) []Displ
 }
 
 func (p *Porter) PrintBundleOutputs(opts *OutputListOptions) error {
-	err := p.applyDefaultOptions(&opts.sharedOptions)
+	err := p.applyDefaultOptions(&opts.SharedOptions)
 	if err != nil {
 		return err
 	}

@@ -117,7 +117,7 @@ func TestBundleLifecycleOpts_ToActionArgs(t *testing.T) {
 
 	t.Run("remaining fields", func(t *testing.T) {
 		opts := BundleLifecycleOpts{
-			sharedOptions: sharedOptions{
+			SharedOptions: SharedOptions{
 				bundleFileOptions: bundleFileOptions{
 					RelocationMapping: "relocation-mapping.json",
 				},

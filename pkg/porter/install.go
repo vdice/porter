@@ -22,7 +22,7 @@ func (p *Porter) InstallBundle(opts InstallOptions) error {
 		return errors.Wrap(err, "unable to pull bundle before installation")
 	}
 
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	if err != nil {
 		return err
 	}

@@ -96,7 +96,7 @@ func (p *Porter) GenerateCredentials(opts CredentialOptions) error {
 		return errors.Wrap(err, "unable to pull bundle before invoking credentials generate")
 	}
 
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	if err != nil {
 		return err
 	}

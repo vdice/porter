@@ -75,7 +75,7 @@ func TestPorter_printDisplayOutput_JSON(t *testing.T) {
 	require.NoError(t, err, "could not store claim")
 
 	opts := OutputListOptions{
-		sharedOptions: sharedOptions{
+		SharedOptions: SharedOptions{
 			Name: "test",
 		},
 		PrintOptions: printer.PrintOptions{

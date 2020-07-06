@@ -99,7 +99,7 @@ func (p *Porter) GenerateParameters(opts ParameterOptions) error {
 		return errors.Wrap(err, "unable to pull bundle before invoking parameters generate")
 	}
 
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	if err != nil {
 		return err
 	}

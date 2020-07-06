@@ -7,13 +7,13 @@ import (
 )
 
 type BundleLifecycleOpts struct {
-	sharedOptions
+	SharedOptions
 	BundlePullOptions
 	AllowAccessToDockerHost bool
 }
 
 func (o *BundleLifecycleOpts) Validate(args []string, cxt *context.Context) error {
-	err := o.sharedOptions.Validate(args, cxt)
+	err := o.SharedOptions.Validate(args, cxt)
 	if err != nil {
 		return err
 	}

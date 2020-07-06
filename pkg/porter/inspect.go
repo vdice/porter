@@ -34,7 +34,7 @@ func (p *Porter) Inspect(o ExplainOpts) error {
 		return errors.Wrap(err, "unable to pull bundle before invoking explain command")
 	}
 
-	err = p.applyDefaultOptions(&o.sharedOptions)
+	err = p.applyDefaultOptions(&o.SharedOptions)
 	if err != nil {
 		return err
 	}

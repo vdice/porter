@@ -21,7 +21,7 @@ func TestPorter_applyDefaultOptions(t *testing.T) {
 
 	opts := &InstallOptions{
 		BundleLifecycleOpts{
-			sharedOptions: sharedOptions{
+			SharedOptions: SharedOptions{
 				bundleFileOptions: bundleFileOptions{
 					File: "porter.yaml",
 				},
@@ -32,7 +32,7 @@ func TestPorter_applyDefaultOptions(t *testing.T) {
 	require.NoError(t, err)
 
 	p.Debug = true
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	require.NoError(t, err)
 
 	assert.NotNil(t, p.Manifest, "Manifest should be loaded")
@@ -51,7 +51,7 @@ func TestPorter_applyDefaultOptions_NoManifest(t *testing.T) {
 	err := opts.Validate([]string{}, p.Context)
 	require.NoError(t, err)
 
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	require.NoError(t, err)
 
 	assert.Equal(t, "", opts.Name, "opts.Name should be empty because the manifest was not available to default from")
@@ -70,7 +70,7 @@ func TestPorter_applyDefaultOptions_DebugOff(t *testing.T) {
 	require.NoError(t, err)
 
 	p.Debug = false
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	require.NoError(t, err)
 
 	assert.Equal(t, p.Manifest.Name, opts.Name)
@@ -92,7 +92,7 @@ func TestPorter_applyDefaultOptions_ParamSet(t *testing.T) {
 	require.NoError(t, err)
 
 	p.Debug = true
-	err = p.applyDefaultOptions(&opts.sharedOptions)
+	err = p.applyDefaultOptions(&opts.SharedOptions)
 	require.NoError(t, err)
 
 	debug, set := opts.parsedParams["porter-debug"]
@@ -154,7 +154,7 @@ func TestInstallOptions_validateDriver(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			opts := InstallOptions{
 				BundleLifecycleOpts{
-					sharedOptions: sharedOptions{
+					SharedOptions: SharedOptions{
 						Driver: tc.driver,
 					},
 				},

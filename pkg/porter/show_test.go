@@ -15,7 +15,7 @@ func TestPorter_ShowBundle(t *testing.T) {
 	p := NewTestPorter(t)
 	p.TestConfig.SetupPorterHome()
 	opts := ShowOptions{
-		sharedOptions: sharedOptions{
+		SharedOptions: SharedOptions{
 			Name: "test",
 		},
 		PrintOptions: printer.PrintOptions{
