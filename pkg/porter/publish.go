@@ -3,12 +3,12 @@ package porter
 import (
 	"bytes"
 	"fmt"
-	"path"
 	"path/filepath"
 	"strings"
 
 	"get.porter.sh/porter/pkg/build"
 	portercontext "get.porter.sh/porter/pkg/context"
+	"get.porter.sh/porter/pkg/manifest"
 	"github.com/cnabio/cnab-go/bundle"
 	"github.com/cnabio/cnab-go/bundle/loader"
 	"github.com/cnabio/cnab-go/packager"
@@ -165,7 +165,7 @@ func (p *Porter) publishFromArchive(opts PublishOptions) error {
 	// Push updated images (renamed based on provided bundle tag) with same digests
 	// then update the bundle with new values (image name, digest)
 	for i, invImg := range bun.InvocationImages {
-		newImgName, err := getNewImageNameFromBundleTag(invImg.Image, opts.Tag)
+		newImgName, err := manifest.GetNewImageNameFromBundleTag(invImg.Image, opts.Tag)
 		if err != nil {
 			return err
 		}
@@ -181,7 +181,7 @@ func (p *Porter) publishFromArchive(opts PublishOptions) error {
 		}
 	}
 	for name, img := range bun.Images {
-		newImgName, err := getNewImageNameFromBundleTag(img.Image, opts.Tag)
+		newImgName, err := manifest.GetNewImageNameFromBundleTag(img.Image, opts.Tag)
 		if err != nil {
 			return err
 		}
@@ -277,52 +277,6 @@ func (p *Porter) updateBundleWithNewImage(bun bundle.Bundle, newImg image.Name, 
 	}
 
 	return nil
-}
-
-// getNewImageNameFromBundleTag derives a new image.Name object from the provided original
-// image (string) using the provided bundleTag to glean registry/org/etc.
-func getNewImageNameFromBundleTag(origImg, bundleTag string) (image.Name, error) {
-	origImgName, err := image.NewName(origImg)
-	if err != nil {
-		return image.EmptyName, errors.Wrapf(err, "unable to parse image %q into domain/path components", origImg)
-	}
-
-	bundleTagName, err := image.NewName(bundleTag)
-	if err != nil {
-		return image.EmptyName, errors.Wrapf(err, "unable to parse bundle tag %q into domain/path components", bundleTag)
-	}
-
-	// Swap out Host
-	origHost := origImgName.Host()
-	newHost := bundleTagName.Host()
-	newImg := strings.Replace(origImgName.String(), origHost, newHost, -1)
-
-	// Swap out org (via Path)
-	origPathParts := strings.Split(origImgName.Path(), "/")
-	tagPathParts := strings.Split(bundleTagName.Path(), "/")
-	var newOrg string
-	if len(tagPathParts) > 1 {
-		newOrg = tagPathParts[0]
-	}
-	if len(origPathParts) == 1 {
-		// original image has no org, e.g. a library image
-		// so just prepend new org
-		newImg = path.Join(newOrg, newImg)
-	} else {
-		newImgName, err := image.NewName(newImg)
-		if err != nil {
-			return image.EmptyName, errors.Wrapf(err, "unable to parse image %q into domain/path components", newImg)
-		}
-
-		newImg = path.Join(newImgName.Host(), strings.Replace(newImgName.Path(), origPathParts[0], newOrg, 1))
-	}
-
-	newImgName, err := image.NewName(newImg)
-	if err != nil {
-		return image.EmptyName, errors.Wrapf(err, "unable to parse image %q into domain/path components", newImg)
-	}
-
-	return newImgName, nil
 }
 
 func (p *Porter) rewriteBundleWithInvocationImageDigest(digest string) (bundle.Bundle, error) {

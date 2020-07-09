@@ -405,19 +405,43 @@ func TestLoadManifestWithRequiredExtensions(t *testing.T) {
 }
 
 func TestSetInvocationImageFromBundleTag(t *testing.T) {
-	t.Run("with image override", func(t *testing.T) {
+	t.Run("update registry/org: implicit registry for bundle, has subdir", func(t *testing.T) {
 		m := Manifest{
 			Version:   "1.2.3-beta.1",
-			BundleTag: "getporter/mybun:v1.2.3",
-			Image:     "portersh/mybun-some-installer:v1.2.3-beta.1",
+			BundleTag: "getporter/bundles/mybun:v1.2.3",
+			Image:     "portersh.azurecr.io/mybun-some-installer:v1.2.3-beta.1",
 		}
 		err := m.SetInvocationImageFromBundleTag(m.BundleTag, true)
 		require.NoError(t, err)
-		assert.Equal(t, "getporter/mybun:v1.2.3", m.BundleTag)
-		assert.Equal(t, "getporter/mybun-installer:v1.2.3", m.Image)
+		assert.Equal(t, "getporter/bundles/mybun:v1.2.3", m.BundleTag)
+		assert.Equal(t, "docker.io/getporter/bundles/mybun-some-installer:v1.2.3-beta.1", m.Image)
 	})
 
-	t.Run("without image override", func(t *testing.T) {
+	t.Run("update registry/org: explicit registry for bundle", func(t *testing.T) {
+		m := Manifest{
+			Version:   "1.2.3-beta.1",
+			BundleTag: "getporter.azurecr.io/mybun:v1.2.3",
+			Image:     "portersh.azurecr.io/mybun-some-installer:v1.2.3-beta.1",
+		}
+		err := m.SetInvocationImageFromBundleTag(m.BundleTag, true)
+		require.NoError(t, err)
+		assert.Equal(t, "getporter.azurecr.io/mybun:v1.2.3", m.BundleTag)
+		assert.Equal(t, "getporter.azurecr.io/mybun-some-installer:v1.2.3-beta.1", m.Image)
+	})
+
+	t.Run("update registry/org: library bundle", func(t *testing.T) {
+		m := Manifest{
+			Version:   "1.2.3-beta.1",
+			BundleTag: "mylibrarybun:v1.2.3",
+			Image:     "docker.io/myinstaller:v1.2.3-beta.1",
+		}
+		err := m.SetInvocationImageFromBundleTag(m.BundleTag, true)
+		require.NoError(t, err)
+		assert.Equal(t, "mylibrarybun:v1.2.3", m.BundleTag)
+		assert.Equal(t, "docker.io/library/myinstaller:v1.2.3-beta.1", m.Image)
+	})
+
+	t.Run("don't update registry/org", func(t *testing.T) {
 		m := Manifest{
 			Version:   "1.2.3-beta.1",
 			BundleTag: "getporter/mybun:v1.2.3",
@@ -427,5 +451,49 @@ func TestSetInvocationImageFromBundleTag(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "getporter/mybun:v1.2.3", m.BundleTag)
 		assert.Equal(t, "portersh/mybun-some-installer:v1.2.3-beta.1", m.Image)
+	})
+}
+
+func TestPublish_GetNewImageNameFromBundleTag(t *testing.T) {
+	t.Run("has registry and org", func(t *testing.T) {
+		newInvImgName, err := GetNewImageNameFromBundleTag("localhost:5000/myorg/apache-installer", "example.com/neworg/apache:v0.1.0")
+		require.NoError(t, err, "GetNewImageNameFromBundleTag failed")
+		assert.Equal(t, "example.com/neworg/apache-installer", newInvImgName.String())
+	})
+
+	t.Run("no registry, has org", func(t *testing.T) {
+		newInvImgName, err := GetNewImageNameFromBundleTag("myorg/apache-installer", "example.com/anotherorg/apache:v0.1.0")
+		require.NoError(t, err, "GetNewImageNameFromBundleTag failed")
+		assert.Equal(t, "example.com/anotherorg/apache-installer", newInvImgName.String())
+	})
+
+	t.Run("org repeated in registry name", func(t *testing.T) {
+		newInvImgName, err := GetNewImageNameFromBundleTag("getporter/whalesayd", "getporter.azurecr.io/neworg/whalegap:v0.1.0")
+		require.NoError(t, err, "GetNewImageNameFromBundleTag failed")
+		assert.Equal(t, "getporter.azurecr.io/neworg/whalesayd", newInvImgName.String())
+	})
+
+	t.Run("org repeated in image name", func(t *testing.T) {
+		newInvImgName, err := GetNewImageNameFromBundleTag("getporter/getporter-hello-installer", "test.azurecr.io/neworg/hello:v0.1.0")
+		require.NoError(t, err, "GetNewImageNameFromBundleTag failed")
+		assert.Equal(t, "test.azurecr.io/neworg/getporter-hello-installer", newInvImgName.String())
+	})
+
+	t.Run("src has no org, dst has no org", func(t *testing.T) {
+		newInvImgName, err := GetNewImageNameFromBundleTag("apache", "example.com/apache:v0.1.0")
+		require.NoError(t, err, "GetNewImageNameFromBundleTag failed")
+		assert.Equal(t, "example.com/apache", newInvImgName.String())
+	})
+
+	t.Run("src has no org, dst has org", func(t *testing.T) {
+		newInvImgName, err := GetNewImageNameFromBundleTag("apache", "example.com/neworg/apache:v0.1.0")
+		require.NoError(t, err, "GetNewImageNameFromBundleTag failed")
+		assert.Equal(t, "example.com/neworg/apache", newInvImgName.String())
+	})
+
+	t.Run("has registry and org, dst is a library bundle", func(t *testing.T) {
+		newInvImgName, err := GetNewImageNameFromBundleTag("localhost:5000/myorg/apache-installer", "apache:v0.1.0")
+		require.NoError(t, err, "GetNewImageNameFromBundleTag failed")
+		assert.Equal(t, "docker.io/library/apache-installer", newInvImgName.String())
 	})
 }

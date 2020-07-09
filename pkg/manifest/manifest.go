@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"reflect"
 	"regexp"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/cnabio/cnab-go/bundle/definition"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
+	"github.com/pivotal/image-relocation/pkg/image"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
@@ -542,9 +544,10 @@ func (m *Manifest) SetDefaults() error {
 }
 
 // SetInvocationImageFromBundleTag sets the invocation image name on the manifest
-// per the provided bundle tag, setting/overriding the original image name if
-// empty or if overrideImage is true
-func (m *Manifest) SetInvocationImageFromBundleTag(bundleTag string, overrideImage bool) error {
+// per the provided bundle tag, setting the original image name if
+// empty or updating the pre-existing image with the domain (registry/org) from
+// the bundle tag value if updateDomain is true
+func (m *Manifest) SetInvocationImageFromBundleTag(bundleTag string, updateDomain bool) error {
 	bundleRef, err := reference.ParseNormalizedNamed(bundleTag)
 	if err != nil {
 		return errors.Wrapf(err, "invalid tag %s", bundleTag)
@@ -555,7 +558,7 @@ func (m *Manifest) SetInvocationImageFromBundleTag(bundleTag string, overrideIma
 		return errors.Wrapf(err, "unable to derive docker tag from bundle tag %q", bundleTag)
 	}
 
-	if m.Image == "" || overrideImage {
+	if m.Image == "" {
 		imageName, err := reference.ParseNormalizedNamed(bundleRef.Name() + "-installer")
 		if err != err {
 			return errors.Wrapf(err, "could not set invocation image to %q", bundleRef.Name()+"-installer")
@@ -571,9 +574,23 @@ func (m *Manifest) SetInvocationImageFromBundleTag(bundleTag string, overrideIma
 			return errors.Wrapf(err, "could not parse invocationImage %q", m.Image)
 		}
 
+		var updatedImg reference.Named
+		if updateDomain {
+			updatedImg, err = GetNewImageNameFromBundleTag(imageRef.Name(), bundleTag)
+			if err != nil {
+				return errors.Wrapf(err, "could not determine updated invocation image from tag %q", bundleTag)
+			}
+		}
+
 		switch v := imageRef.(type) {
 		case reference.Tagged:
-			// Nothing to default, leave this case in, it prevents Named from being triggered
+			if updateDomain {
+				imageRef, err = reference.WithTag(updatedImg, v.Tag())
+				if err != nil {
+					return errors.Wrapf(err, "could not set invocationImage tag to %q", v.Tag())
+				}
+				m.Image = reference.FamiliarString(imageRef)
+			} // else just keep original image name and tag
 		case reference.Named:
 			imageRef, err = reference.WithTag(v, dockerTag)
 			if err != nil {
@@ -614,6 +631,38 @@ func (m *Manifest) getDockerTagFromBundleRef(bundleRef reference.Named) (string,
 	}
 
 	return dockerTag, nil
+}
+
+// GetNewImageNameFromBundleTag derives a new image.Name object from the provided original
+// image (string) using the provided bundleTag to glean registry/org/etc.
+func GetNewImageNameFromBundleTag(origImg, bundleTag string) (image.Name, error) {
+	origName, err := image.NewName(origImg)
+	if err != nil {
+		return image.EmptyName, errors.Wrapf(err, "unable to parse image %q into domain/path components", origImg)
+	}
+
+	bundleName, err := image.NewName(bundleTag)
+	if err != nil {
+		return image.EmptyName, errors.Wrapf(err, "unable to parse bundle tag %q into domain/path components", bundleTag)
+	}
+	bundleHost := bundleName.Host() // e.g. docker.io
+
+	// Split up the Path portion of each to derive original image name
+	// and the bundle org/subdir values
+	origPathParts := strings.Split(origName.Path(), "/")                     // e.g. [origOrg, orgSubdir, orgImgName]
+	origImgName := strings.Join(origPathParts[len(origPathParts)-1:], "/")   // e.g. [origImgName]
+	bundlePathParts := strings.Split(bundleName.Path(), "/")                 // e.g. [bundleOrg, bundleSubdir, bundleImgname]
+	bundleOrg := strings.Join(bundlePathParts[:len(bundlePathParts)-1], "/") // e.g. [bundleOrg, bundleSubdir]
+
+	// Join for bundleHost/bundleOrg/bundleSubdir/origImgName
+	newImg := path.Join(bundleHost, bundleOrg, origImgName)
+
+	newImgName, err := image.NewName(newImg)
+	if err != nil {
+		return image.EmptyName, errors.Wrapf(err, "unable to parse image %q into domain/path components", newImg)
+	}
+
+	return newImgName, nil
 }
 
 func readFromFile(cxt *context.Context, path string) ([]byte, error) {
