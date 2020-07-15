@@ -123,8 +123,8 @@ function testIntegration(e, p) {
     "mkdir -p /go/bin",
     "cd /src",
     "trap 'make -f Makefile.kind delete-kind-cluster' EXIT",
-    `make -f Makefile.kind create-kind-cluster`,
-    "make test-integration"
+    `make -f Makefile.kind install-kind create-kind-cluster`,
+    "make start-local-docker-registry test-integration stop-local-docker-registry"
   );
 
   return testInt;
@@ -136,7 +136,7 @@ function testCLI(e, p) {
   testCLI.enableDind();
 
   testCLI.tasks.push(
-    "make test-cli"
+    "make start-local-docker-registry test-cli stop-local-docker-registry"
   );
 
   return testCLI;
