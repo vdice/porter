@@ -25,22 +25,25 @@ EOF
 endef
 export KIND_CLUSTER_FILE_CREATOR = $(value get_kind_config_file)
 
-CLUSTER_NAME = porter
+KIND_VERSION ?= v0.8.1
+CLUSTER_NAME  = porter
 
 install-kind:
-	@curl -Lo /tmp/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.8.1/kind-$(CLIENT_PLATFORM)-$(CLIENT_ARCH)
+	@curl -Lo /tmp/kind https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-$(CLIENT_PLATFORM)-$(CLIENT_ARCH)
 	@chmod +x /tmp/kind
 	@sudo mv /tmp/kind /usr/local/bin/kind
 
 create-kind-config-file:; @eval "$$KIND_CLUSTER_FILE_CREATOR"
 
-# TODO: remove need to manually set server value
+# TODO: remove need to manually set server value if darwin
 # https://github.com/kubernetes-sigs/kind/issues/1732
 create-kind-cluster: create-kind-config-file
 	@kind create cluster \
 		--name ${CLUSTER_NAME} \
 		--config ${KIND_CONFIG_FILE_NAME}
-	@kubectl config set clusters.kind-${CLUSTER_NAME}.server https://${CURRENT_HOST_IP}:6443
+	@if [ $(CLIENT_PLATFORM) == "darwin" ]; then \
+		kubectl config set clusters.kind-${CLUSTER_NAME}.server https://${CURRENT_HOST_IP}:6443 ; \
+	fi
 
 delete-kind-cluster:
 	@kind delete cluster --name ${CLUSTER_NAME}
