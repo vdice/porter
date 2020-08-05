@@ -2,6 +2,8 @@ package porter
 
 import (
 	"get.porter.sh/porter/pkg/manifest"
+	"github.com/cnabio/cnab-go/bundle"
+	"github.com/pkg/errors"
 )
 
 // applyDefaultOptions applies more advanced defaults to the options
@@ -25,7 +27,15 @@ func (p *Porter) applyDefaultOptions(opts *sharedOptions) error {
 	// Default the claim name to the bundle name
 	//
 	if opts.Name == "" {
-		opts.Name = p.Manifest.Name
+		if p.Manifest.Name != "" {
+			opts.Name = p.Manifest.Name
+		} else if opts.CNABFile != "" {
+			name, err := p.getCNABFileName(opts.CNABFile)
+			if err != nil {
+				return err
+			}
+			opts.Name = name
+		}
 	}
 
 	//
@@ -39,4 +49,18 @@ func (p *Porter) applyDefaultOptions(opts *sharedOptions) error {
 	}
 
 	return nil
+}
+
+func (p *Porter) getCNABFileName(filepath string) (string, error) {
+	data, err := p.FileSystem.ReadFile(filepath)
+	if err != nil {
+		return "", errors.Wrapf(err, "unable to read cnab file %s", filepath)
+	}
+
+	bun, err := bundle.Unmarshal(data)
+	if err != nil {
+		return "", errors.Wrapf(err, "unable to parse cnab file %s", filepath)
+	}
+
+	return bun.Name, nil
 }
