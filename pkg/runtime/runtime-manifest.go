@@ -100,7 +100,15 @@ func resolveCredential(cd manifest.CredentialDefinition) (string, error) {
 }
 
 func (m *RuntimeManifest) resolveBundleOutput(def manifest.OutputDefinition) (string, error) {
-	// Get the output's value from the injected parameter source
+	// The output value may be tracked on the runtime manifest for use during the same action,
+	// if it is both a step output and a bundle-level output. In this case, the wiring parameter
+	// env var (used below) for bundle-level outputs will not yet contain the output value.
+	if m.outputs[def.Name] != "" {
+		return m.outputs[def.Name], nil
+	}
+
+	// Get the output's value from the injected parameter source, which is used to wire up
+	// bundle-level outputs for subsequent actions.
 	psParamEnv := manifest.GetParameterSourceEnvVar(def.Name)
 	outputValue, ok := os.LookupEnv(psParamEnv)
 	if !ok {
@@ -232,7 +240,7 @@ func (m *RuntimeManifest) buildSourceData() (map[string]interface{}, error) {
 		m.setSensitiveValue(stepOutput)
 	}
 
-	// Iterate through the bundle-level manifests and resolve for interpolation
+	// Iterate through the bundle-level outputs and resolve for interpolation
 	for _, outputDef := range m.GetTemplatedOutputs() {
 		// TODO: ApplyTo can impact if the output is available
 		// See https://github.com/deislabs/porter/issues/1159

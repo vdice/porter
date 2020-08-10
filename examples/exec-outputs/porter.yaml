@@ -48,9 +48,10 @@ install:
           jsonPath: "$.users[0]"
   - exec:
       description: "Use a step-level output"
-      command: echo
+      command: ./cluster.sh
       arguments:
-        - "The admin user is: {{ bundle.outputs.admin }}"
+        - assert-admin
+        - "{{ bundle.outputs.admin }}"
       
 add-user:
   - exec:
@@ -103,5 +104,9 @@ outputs:
   - name: kubeconfig
     type: file
     path: /root/.kube/config
+    applyTo:
+      - install
+  - name: admin
+    type: string
     applyTo:
       - install

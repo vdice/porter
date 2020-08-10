@@ -19,6 +19,8 @@ outputs:
   - name: tfstate
     type: file
     path: /cnab/app/outputs/tfstate
+  - name: name
+    type: string
 
 install:
   - exec:
