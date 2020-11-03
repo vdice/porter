@@ -19,8 +19,36 @@ type BuildProvider interface {
 }
 
 type BuildOptions struct {
+	BundleMetadataOptions
 	contextOptions
 	NoLint bool
+}
+
+type BundleMetadataOptions struct {
+	Name      string
+	Version   string
+	Registry  string
+	Reference string
+}
+
+func (o BundleMetadataOptions) ApplyMetadata(p *Porter) error {
+	m := p.Manifest
+
+	if o.Name != "" {
+		m.Name = o.Name
+		if err := m.ValidateBundleName(); err != nil {
+			return err
+		}
+	}
+
+	if o.Version != "" {
+		m.Version = o.Version
+		if err := m.ValidateBundleVersion(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (p *Porter) Build(opts BuildOptions) error {
@@ -36,6 +64,11 @@ func (p *Porter) Build(opts BuildOptions) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	err = opts.ApplyMetadata(p)
+	if err != nil {
+		return err
 	}
 
 	generator := build.NewDockerfileGenerator(p.Config, p.Manifest, p.Templates, p.Mixins)

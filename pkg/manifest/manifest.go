@@ -85,11 +85,6 @@ func (m *Manifest) Validate(cxt *context.Context) error {
 		return err
 	}
 
-	err = m.SetDefaults()
-	if err != nil {
-		return err
-	}
-
 	if strings.ToLower(m.Dockerfile) == "dockerfile" {
 		return errors.New("Dockerfile template cannot be named 'Dockerfile' because that is the filename generated during porter build")
 	}
@@ -153,8 +148,14 @@ func (m *Manifest) Validate(cxt *context.Context) error {
 }
 
 func (m *Manifest) validateMetadata(cxt *context.Context) error {
-	if m.Name == "" {
-		return errors.New("bundle name must be set")
+	err := m.ValidateBundleName()
+	if err != nil {
+		return err
+	}
+
+	err = m.ValidateBundleVersion()
+	if err != nil {
+		return err
 	}
 
 	if m.BundleTag == "" && m.Registry == "" && m.Reference == "" {
@@ -179,6 +180,29 @@ func (m *Manifest) validateMetadata(cxt *context.Context) error {
 		}
 	}
 
+	return nil
+}
+
+func (m *Manifest) ValidateBundleName() error {
+	if m.Name == "" {
+		return errors.New("bundle name must be set")
+	}
+
+	// TODO: move ValidName into generic, non-claim pkg in cnab-go?
+	// And/or create helper func in similarly generic pkg
+	if !claim.ValidName.MatchString(m.Name) {
+		return fmt.Errorf("invalid bundle name %q. Names must be [a-zA-Z0-9-_]+", m.Name)
+	}
+
+	return nil
+}
+
+func (m *Manifest) ValidateBundleVersion() error {
+	if m.Version == "" {
+		return errors.New("bundle version must be set")
+	}
+
+	// TODO: verify version adheres to TBD regex
 	return nil
 }
 
@@ -995,6 +1019,11 @@ func LoadManifestFrom(cxt *context.Context, file string) (*Manifest, error) {
 	}
 
 	err = m.Validate(cxt)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.SetDefaults()
 	if err != nil {
 		return nil, err
 	}
