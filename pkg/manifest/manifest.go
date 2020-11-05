@@ -153,6 +153,15 @@ func (m *Manifest) Validate(cxt *context.Context) error {
 }
 
 func (m *Manifest) validateMetadata(cxt *context.Context) error {
+	// We'd like to know if we're looking at the user-supplied manifest,
+	// as there are some warnings that aren't applicable if the manifest
+	// is Porter's translation
+	userManifest := true
+	// TODO: using build.LOCAL_MANIFEST causes circular import
+	if m.ManifestPath == ".cnab/app/porter.yaml" {
+		userManifest = false
+	}
+
 	if m.Name == "" {
 		return errors.New("bundle name must be set")
 	}
@@ -162,8 +171,12 @@ func (m *Manifest) validateMetadata(cxt *context.Context) error {
 	}
 
 	if m.Reference != "" && m.Registry != "" {
-		fmt.Fprintf(cxt.Out, "WARNING: both registry and reference were provided; "+
-			"using the reference value of %s for the bundle reference\n", m.Reference)
+		// Porter will always set a value for m.Reference after processing,
+		// therefore only warn if the manifest is user-supplied
+		if userManifest {
+			fmt.Fprintf(cxt.Out, "WARNING: both registry and reference were provided; "+
+				"using the reference value of %s for the bundle reference\n", m.Reference)
+		}
 	}
 
 	// Check the deprecated tag field (still allowing use for time being)

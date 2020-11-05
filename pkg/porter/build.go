@@ -11,6 +11,7 @@ import (
 	"get.porter.sh/porter/pkg/printer"
 	"github.com/cnabio/cnab-go/bundle"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
 type BuildProvider interface {
@@ -38,6 +39,22 @@ func (p *Porter) Build(opts BuildOptions) error {
 		}
 	}
 
+	// Write the manifest, with any dynamic overrides, for inclusion
+	// into the invocation image.
+	if err = p.writeManifest(p.Manifest); err != nil {
+		return errors.Wrap(err, "unable to write manifest")
+	}
+
+	// Build bundle so that resulting bundle.json is available for inclusion
+	// into the invocation image.
+	// Note: the content digest field on the invocation image section of the
+	// bundle.json will *not* be correct until the image is actually pushed
+	// to a registry.  The bundle.json will need to be updated after publishing
+	// and provided just-in-time during bundle execution.
+	if err = p.buildBundle(p.Manifest.Image, ""); err != nil {
+		return errors.Wrap(err, "unable to build bundle")
+	}
+
 	generator := build.NewDockerfileGenerator(p.Config, p.Manifest, p.Templates, p.Mixins)
 
 	if err := generator.PrepareFilesystem(); err != nil {
@@ -46,11 +63,8 @@ func (p *Porter) Build(opts BuildOptions) error {
 	if err := generator.GenerateDockerFile(); err != nil {
 		return fmt.Errorf("unable to generate Dockerfile: %s", err)
 	}
-	if err := p.Builder.BuildInvocationImage(p.Manifest); err != nil {
-		return errors.Wrap(err, "unable to build CNAB invocation image")
-	}
 
-	return p.buildBundle(p.Manifest.Image, "")
+	return errors.Wrap(p.Builder.BuildInvocationImage(p.Manifest), "unable to build CNAB invocation image")
 }
 
 func (p *Porter) preLint() error {
@@ -111,6 +125,7 @@ func (p *Porter) buildBundle(invocationImage string, digest string) error {
 	if err != nil {
 		return err
 	}
+
 	return p.writeBundle(bun)
 }
 
@@ -122,4 +137,19 @@ func (p Porter) writeBundle(b bundle.Bundle) error {
 	}
 	_, err = b.WriteTo(f)
 	return errors.Wrapf(err, "error writing to %s", build.LOCAL_BUNDLE)
+}
+
+func (p Porter) writeManifest(m *manifest.Manifest) error {
+	f, err := p.Config.FileSystem.OpenFile(build.LOCAL_MANIFEST, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	defer f.Close()
+	if err != nil {
+		return errors.Wrapf(err, "error creating %s", build.LOCAL_MANIFEST)
+	}
+
+	bytes, err := yaml.Marshal(m)
+	if err != nil {
+		return errors.Wrap(err, "error marshaling the Porter manifest")
+	}
+	_, err = f.Write(bytes)
+	return errors.Wrapf(err, "error writing to %s", build.LOCAL_MANIFEST)
 }

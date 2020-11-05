@@ -311,7 +311,17 @@ func TestSetDefaults(t *testing.T) {
 			Registry:  "myregistry/myorg",
 			Reference: "getporter/org/mybun:v1.2.3",
 		}
+		// if manifest is Porter's canonical version, we don't expect a warning
+		m.ManifestPath = ".cnab/app/porter.yaml"
 		err := m.validateMetadata(cxt.Context)
+		require.NoError(t, err)
+		require.Equal(t,
+			"",
+			cxt.GetOutput())
+
+		// if manifest is user-supplied, we expect a warning
+		m.ManifestPath = config.Name
+		err = m.validateMetadata(cxt.Context)
 		require.NoError(t, err)
 		require.Equal(t,
 			"WARNING: both registry and reference were provided; using the reference value of getporter/org/mybun:v1.2.3 for the bundle reference\n",
